@@ -1,0 +1,6 @@
+# Ignore database, local files, and system junk
+members.db
+*.csv
+*.xlsx
+__pycache__/
+.DS_Store
