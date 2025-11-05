@@ -73,7 +73,7 @@ EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 st.sidebar.header('Data Source')
 
-GITHUB_CSV_URL = "https://raw.githubusercontent.com/< Walfaanaa>/</Afoosha_Walgargaarsa_Odaa >/main/AWO(july).csv"  # <-- Change this
+GITHUB_CSV_URL = "https://github.com/Walfaanaa/Afoosha_Walgargaarsa_Odaa/main/AWO(july).csv"  # <-- Change this
 
 try:
     df_github = pd.read_csv(GITHUB_CSV_URL)
