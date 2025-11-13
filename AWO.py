@@ -274,3 +274,27 @@ with tab4:
 st.markdown('---')
 st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
+# -----------------------
+# Summary Statistics Section
+# -----------------------
+st.markdown("## 📊 Summary Statistics")
+
+if not st.session_state.df.empty:
+    numeric_cols = ['MONTHLY_PAYMENT', 'ADDITIONAL_PAYMENT', 'EXPENSES_INCURRED', 'LOAN', 'punishment']
+
+    # Calculate totals and averages
+    summary_df = pd.DataFrame({
+        'Total (ETB)': st.session_state.df[numeric_cols].sum(),
+        'Average (ETB)': st.session_state.df[numeric_cols].mean().round(2)
+    })
+
+    # Display nicely
+    st.dataframe(summary_df.style.format("{:,.2f}"))
+
+    # Optionally show grand totals
+    st.markdown("---")
+    st.metric("💰 Grand Total (All Financials)", f"{st.session_state.df[numeric_cols].sum().sum():,.2f} ETB")
+else:
+    st.info("No data available for summary statistics yet.")
+
+
