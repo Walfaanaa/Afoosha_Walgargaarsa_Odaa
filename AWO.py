@@ -41,7 +41,7 @@ if 'refresh_table' not in st.session_state:
 # Authentication
 # -----------------------
 USERS = {
-    'admin': {'password_hash': bcrypt.hashpw(b"Oromia_1234_mw_43#", bcrypt.gensalt()), 'role': 'Admin'},
+    'admin': {'password_hash': bcrypt.hashpw(b"AWO_2011_al#", bcrypt.gensalt()), 'role': 'Admin'},
     'staff': {'password_hash': bcrypt.hashpw(b"Staff$2025", bcrypt.gensalt()), 'role': 'Staff'},
     'viewer': {'password_hash': bcrypt.hashpw(b"View#2025", bcrypt.gensalt()), 'role': 'Viewer'}
 }
@@ -273,3 +273,4 @@ with tab4:
 # -----------------------
 st.markdown('---')
 st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
+
