@@ -283,11 +283,18 @@ if not st.session_state.df.empty:
     numeric_cols = ['MONTHLY_PAYMENT', 'ADDITIONAL_PAYMENT', 'EXPENSES_INCURRED', 'LOAN', 'punishment']
 
     # Calculate total values
-    totals = st.session_state.df[numeric_cols].sum().reset_index()
+    totals = st.session_state.df[numeric_cols].sum().to_frame().reset_index()
     totals.columns = ['Category', 'Total (ETB)']
+
+    # Display totals table
+    st.dataframe(totals, use_container_width=True)
 
     # Show bar chart
     st.bar_chart(data=totals, x='Category', y='Total (ETB)')
+else:
+    st.warning("No data available to display summary statistics.")
+
+
 
 
 
