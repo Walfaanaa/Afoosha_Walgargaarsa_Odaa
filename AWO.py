@@ -274,6 +274,12 @@ with tab4:
 st.markdown('---')
 st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
+# -----------------------
+# 📊 Summary Statistics Section (Bar Chart with "Total Capital Without Interest")
+# -----------------------
+import streamlit as st
+import pandas as pd
+import plotly.express as px  # ✅ make sure this import runs at top
 
 st.markdown("## 📊 Summary Statistics")
 
@@ -284,7 +290,7 @@ if not st.session_state.df.empty:
     # Calculate total values for each numeric column
     totals = st.session_state.df[numeric_cols].sum()
 
-    # Calculate "Total Capital Without Interest"
+    # Calculate Total Capital Without Interest
     total_capital_without_interest = (
         totals['MONTHLY_PAYMENT']
         + totals['ADDITIONAL_PAYMENT']
@@ -293,17 +299,17 @@ if not st.session_state.df.empty:
         - totals['EXPENSES_INCURRED']
     )
 
-    # Convert to DataFrame for display
+    # Convert totals to DataFrame
     totals_df = totals.to_frame().reset_index()
     totals_df.columns = ['Category', 'Total (ETB)']
 
-    # Add the new calculated category
+    # Add new calculated row
     totals_df.loc[len(totals_df.index)] = ['Total Capital Without Interest', total_capital_without_interest]
 
-    # Display table
+    # Display as table
     st.dataframe(totals_df, use_container_width=True)
 
-    # Create bar chart with value labels
+    # ✅ Build Plotly bar chart
     fig = px.bar(
         totals_df,
         x='Category',
@@ -314,8 +320,8 @@ if not st.session_state.df.empty:
         color_discrete_sequence=px.colors.qualitative.Set2
     )
 
-    # Customize appearance
-    fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+    # Customize label display
+    fig.update_traces(texttemplate='%{text:,.2f}', textposition='outside')
     fig.update_layout(
         xaxis_title="Category",
         yaxis_title="Total (ETB)",
@@ -324,10 +330,11 @@ if not st.session_state.df.empty:
         showlegend=False
     )
 
+    # Show chart
     st.plotly_chart(fig, use_container_width=True)
+
 else:
     st.warning("No data available to display summary statistics.")
-
 
 
 
