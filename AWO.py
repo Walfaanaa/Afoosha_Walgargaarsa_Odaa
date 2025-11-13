@@ -289,10 +289,5 @@ if not st.session_state.df.empty:
     # Show bar chart
     st.bar_chart(data=totals, x='Category', y='Total (ETB)')
 
-    # Show grand total below chart
-    grand_total = totals['Total (ETB)'].sum()
-    st.markdown(f"### 💰 Grand Total (All Financials): **{grand_total:,.2f} ETB**")
 
-else:
-    st.info("No data available for summary statistics yet.")
 
