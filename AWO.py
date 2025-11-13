@@ -274,35 +274,47 @@ with tab4:
 st.markdown('---')
 st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
-# -----------------------
-# 📊 Summary Statistics Section (Bar Chart with Values)
-# -----------------------
-import plotly.express as px
 
 st.markdown("## 📊 Summary Statistics")
 
 if not st.session_state.df.empty:
+    # Define numeric columns
     numeric_cols = ['MONTHLY_PAYMENT', 'ADDITIONAL_PAYMENT', 'EXPENSES_INCURRED', 'LOAN', 'punishment']
 
-    # Calculate total values
-    totals = st.session_state.df[numeric_cols].sum().to_frame().reset_index()
-    totals.columns = ['Category', 'Total (ETB)']
+    # Calculate total values for each numeric column
+    totals = st.session_state.df[numeric_cols].sum()
 
-    # Display totals table
-    st.dataframe(totals, use_container_width=True)
+    # Calculate "Total Capital Without Interest"
+    total_capital_without_interest = (
+        totals['MONTHLY_PAYMENT']
+        + totals['ADDITIONAL_PAYMENT']
+        + totals['LOAN']
+        + totals['punishment']
+        - totals['EXPENSES_INCURRED']
+    )
 
-    # Create Plotly bar chart with labels
+    # Convert to DataFrame for display
+    totals_df = totals.to_frame().reset_index()
+    totals_df.columns = ['Category', 'Total (ETB)']
+
+    # Add the new calculated category
+    totals_df.loc[len(totals_df.index)] = ['Total Capital Without Interest', total_capital_without_interest]
+
+    # Display table
+    st.dataframe(totals_df, use_container_width=True)
+
+    # Create bar chart with value labels
     fig = px.bar(
-        totals,
+        totals_df,
         x='Category',
         y='Total (ETB)',
         text='Total (ETB)',
-        title='💰 Total Summary by Category',
+        title='💰 Total Summary by Category (Including Capital Without Interest)',
         color='Category',
         color_discrete_sequence=px.colors.qualitative.Set2
     )
 
-    # Format text labels on bars
+    # Customize appearance
     fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
     fig.update_layout(
         xaxis_title="Category",
@@ -315,6 +327,8 @@ if not st.session_state.df.empty:
     st.plotly_chart(fig, use_container_width=True)
 else:
     st.warning("No data available to display summary statistics.")
+
+
 
 
 
