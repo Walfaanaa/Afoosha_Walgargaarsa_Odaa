@@ -275,8 +275,10 @@ st.markdown('---')
 st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
 # -----------------------
-# Summary Statistics Section (Bar Chart)
+# 📊 Summary Statistics Section (Bar Chart with Values)
 # -----------------------
+import plotly.express as px
+
 st.markdown("## 📊 Summary Statistics")
 
 if not st.session_state.df.empty:
@@ -289,10 +291,32 @@ if not st.session_state.df.empty:
     # Display totals table
     st.dataframe(totals, use_container_width=True)
 
-    # Show bar chart
-    st.bar_chart(data=totals, x='Category', y='Total (ETB)')
+    # Create Plotly bar chart with labels
+    fig = px.bar(
+        totals,
+        x='Category',
+        y='Total (ETB)',
+        text='Total (ETB)',
+        title='💰 Total Summary by Category',
+        color='Category',
+        color_discrete_sequence=px.colors.qualitative.Set2
+    )
+
+    # Format text labels on bars
+    fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+    fig.update_layout(
+        xaxis_title="Category",
+        yaxis_title="Total (ETB)",
+        uniformtext_minsize=8,
+        uniformtext_mode='hide',
+        showlegend=False
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 else:
     st.warning("No data available to display summary statistics.")
+
+
 
 
 
