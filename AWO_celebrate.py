@@ -1,33 +1,39 @@
 import streamlit as st
 import pandas as pd
 import requests
-from io import StringIO, BytesIO
+from io import BytesIO
 from datetime import datetime, timedelta
 
-st.title("Afoosha Walgargaarsa Odaa – (GitHub data)")
+st.title("Afoosha Walgargaarsa Odaa – Celebration Scheduling System")
 
-# URL of the raw CSV file in GitHub
-csv_url = "https://raw.githubusercontent.com/Walfaanaa/Afoosha_Walgargaarsa_Odaa/main/members.csv"
+# -----------------------------
+# Load Excel file from GitHub
+# -----------------------------
+github_url = "https://raw.githubusercontent.com/Walfaanaa/Afoosha_Walgargaarsa_Odaa/main/AWO(celebrate_order).xlsx"
 
 try:
-    s = requests.get(csv_url).content
-    members = pd.read_csv(StringIO(s.decode('utf-8')))
-except Exception as e_csv:
-    st.warning("Could not read CSV from GitHub; trying Excel.")
-    # Try Excel file
-    xlsx_url = "https://raw.githubusercontent.com/Walfaanaa/Afoosha_Walgargaarsa_Odaa/main/members.xlsx"
-    try:
-        b = requests.get(xlsx_url).content
-        members = pd.read_excel(BytesIO(b))
-    except Exception as e_xlsx:
-        st.error(f"Cannot load data from GitHub. CSV error: {e_csv}\\nExcel error: {e_xlsx}")
-        st.stop()
+    r = requests.get(github_url)
+    r.raise_for_status()  # Raise error if not successful
+    members = pd.read_excel(BytesIO(r.content))
+except Exception as e:
+    st.error(f"Cannot load Excel file from GitHub.\n{e}")
+    st.stop()
 
-# --- rest of scheduling logic as before ---
-start_date = datetime(2025, 1, 1)
-members["celebration_date"] = [start_date + timedelta(days=90 * i) for i in range(len(members))]
+# -----------------------------
+# Assign celebration dates 3 months apart
+# -----------------------------
+start_date = datetime(2025, 1, 1)  # First celebration date
+
+members["celebration_date"] = [
+    start_date + timedelta(days=90 * i)
+    for i in range(len(members))
+]
 
 today = datetime.today()
+
+# -----------------------------
+# Set status symbols
+# -----------------------------
 def status(date):
     if date < today:
         return "✔️ Completed"
@@ -38,11 +44,22 @@ def status(date):
 
 members["status"] = members["celebration_date"].apply(status)
 
+# -----------------------------
+# Display celebration schedule
+# -----------------------------
 st.subheader("Celebration Schedule")
 st.dataframe(members)
 
+# -----------------------------
+# Auto-refresh / New round
+# -----------------------------
 if all(members["celebration_date"] < today):
     st.warning("All members completed! Starting a new round...")
+
     new_start = today
-    members["celebration_date"] = [new_start + timedelta(days=90 * i) for i in range(len(members))]
+    members["celebration_date"] = [
+        new_start + timedelta(days=90 * i)
+        for i in range(len(members))
+    ]
+    members["status"] = members["celebration_date"].apply(status)
     st.dataframe(members)
