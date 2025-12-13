@@ -27,7 +27,7 @@ if 'auth' not in st.session_state:
 
 if 'df' not in st.session_state:
     st.session_state.df = pd.DataFrame(columns=[
-        'ID','FIST_NAME','LAST_NAME','MONTHLY_PAYMENT','ADDITIONAL_PAYMENT',
+        'ID','FIRST_NAME','LAST_NAME','MONTHLY_PAYMENT','ADDITIONAL_PAYMENT',
         'EXPENSES_INCURRED','LOAN','OPENINNG_DATE','PHONE_NUM','Email','punishment'
     ])
 
@@ -335,6 +335,7 @@ if not st.session_state.df.empty:
 
 else:
     st.warning("No data available to display summary statistics.")
+
 
 
 
