@@ -85,7 +85,7 @@ except Exception as e:
     conn = sqlite3.connect(db_file)
     conn.execute('''CREATE TABLE IF NOT EXISTS members (
         ID INTEGER PRIMARY KEY,
-        FIST_NAME TEXT,
+        FIRST_NAME TEXT,
         LAST_NAME TEXT,
         MONTHLY_PAYMENT REAL,
         ADDITIONAL_PAYMENT REAL,
@@ -335,6 +335,7 @@ if not st.session_state.df.empty:
 
 else:
     st.warning("No data available to display summary statistics.")
+
 
 
 
