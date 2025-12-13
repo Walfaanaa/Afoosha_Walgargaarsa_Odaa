@@ -215,7 +215,7 @@ with tab2:
         selected_id = st.selectbox("Select Member ID", member_ids)
         idx = st.session_state.df['ID'].astype(str).eq(selected_id).idxmax()
         member = st.session_state.df.loc[idx]
-        st.write(f"**{member['FIST_NAME']} {member['LAST_NAME']}**")
+        st.write(f"**{member['FIRST_NAME']} {member['LAST_NAME']}**")
 
         with st.form("payment_form"):
             increment_value = float(st.number_input("Change step (default 100):", min_value=1.0, value=100.0))
@@ -335,6 +335,7 @@ if not st.session_state.df.empty:
 
 else:
     st.warning("No data available to display summary statistics.")
+
 
 
 
