@@ -127,21 +127,24 @@ def display_summary():
     if not st.session_state.df.empty:
         totals = st.session_state.df[['MONTHLY_PAYMENT','ADDITIONAL_PAYMENT','EXPENSES_INCURRED','LOAN','punishment']].sum()
         Total_capital = totals['MONTHLY_PAYMENT'] + totals['ADDITIONAL_PAYMENT'] + totals['punishment']
-        Current_capital = Total_capital - totals['EXPENSES_INCURRED']
+        Current_capital = Total_capital +totals['LOAN']- totals['EXPENSES_INCURRED']
         Current_capital_on_account = 368_682.90
-        Interest_from_bank = Current_capital - Current_capital_on_account
+        loan=totals['LOAN']
+        Interest_from_bank = Current_capital_on_account-Current_capital 
 
         summary_df = pd.DataFrame({
             'Category': [
                 'Total Capital',
                 'Current Capital',
                 'Current Capital on Account',
+                'loan',
                 'Interest from Bank'
             ],
             'Amount (ETB)': [
                 Total_capital,
                 Current_capital,
                 Current_capital_on_account,
+                loan,
                 Interest_from_bank
             ]
         })
@@ -154,6 +157,7 @@ def display_summary():
             'Total Capital': 'blue',
             'Current Capital': 'red',
             'Current Capital on Account': 'green',
+            'loan':'violet',
             'Interest from Bank': 'orange'
         }
 
@@ -318,3 +322,4 @@ st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
 # Display Summary Statistics at bottom
 display_summary()
+
