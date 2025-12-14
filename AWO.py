@@ -129,6 +129,7 @@ def display_summary():
         Total_capital = totals['MONTHLY_PAYMENT'] + totals['ADDITIONAL_PAYMENT'] + totals['punishment']
         Current_capital = Total_capital +totals['LOAN']- totals['EXPENSES_INCURRED']
         Current_capital_on_account = 368_682.90
+        total_incurred= totals['EXPENSES_INCURRED']
         loan=totals['LOAN']
         Interest_from_bank = Current_capital_on_account-Current_capital
         punishment=totals['punishment']
@@ -138,6 +139,7 @@ def display_summary():
                 'Total Capital',
                 'Current Capital',
                 'Current Capital on Account',
+                'total_incurred',
                 'loan',
                 'Interest from Bank',
                 'punishment'
@@ -146,6 +148,7 @@ def display_summary():
                 Total_capital,
                 Current_capital,
                 Current_capital_on_account,
+                total_incurred,
                 loan,
                 Interest_from_bank,
                 punishment
@@ -160,6 +163,7 @@ def display_summary():
             'Total Capital': 'blue',
             'Current Capital': 'red',
             'Current Capital on Account': 'green',
+            'total_incurred' :'#FFFF00'
             'loan':'violet',
             'Interest from Bank': 'orange',
             'punishment': 'gray'
@@ -326,6 +330,7 @@ st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
 # Display Summary Statistics at bottom
 display_summary()
+
 
 
 
