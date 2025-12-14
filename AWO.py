@@ -121,6 +121,51 @@ def validate_row(row):
     return errors
 
 # -----------------------
+# Summary Statistics
+# -----------------------
+def display_summary():
+    if not st.session_state.df.empty:
+        totals = st.session_state.df[['MONTHLY_PAYMENT','ADDITIONAL_PAYMENT','EXPENSES_INCURRED','LOAN','punishment']].sum()
+        Total_capital = totals['MONTHLY_PAYMENT'] + totals['ADDITIONAL_PAYMENT'] + totals['punishment']
+        Current_capital = Total_capital - totals['EXPENSES_INCURRED']
+        Current_capital_on_account = 368_682.90
+        Interest_from_bank = Current_capital - Current_capital_on_account
+
+        summary_df = pd.DataFrame({
+            'Category': [
+                'Total Capital',
+                'Current Capital',
+                'Current Capital on Account',
+                'Interest from Bank'
+            ],
+            'Amount (ETB)': [
+                Total_capital,
+                Current_capital,
+                Current_capital_on_account,
+                Interest_from_bank
+            ]
+        })
+
+        summary_df['Amount (ETB)'] = summary_df['Amount (ETB)'].map(lambda x: f"{x:,.2f}")
+
+        st.dataframe(summary_df, use_container_width=True)
+
+        color_map = {
+            'Total Capital': 'blue',
+            'Current Capital': 'red',
+            'Current Capital on Account': 'green',
+            'Interest from Bank': 'orange'
+        }
+
+        fig = px.bar(summary_df, x='Category', y='Amount (ETB)', text='Amount (ETB)',
+                     color='Category', color_discrete_map=color_map, title='💰 Summary Statistics')
+        fig.update_traces(textposition='outside', hovertemplate='<b>%{x}</b><br>Amount: %{y}')
+        fig.update_layout(xaxis_title="Category", yaxis_title="Amount (ETB)", showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("No data available to display summary statistics.")
+
+# -----------------------
 # Tabs Layout
 # -----------------------
 tab1, tab2, tab3, tab4 = st.tabs(["👥 Members", "💵 Payments", "⚙️ Audit Log", "🔒 Profile"])
@@ -163,6 +208,7 @@ with tab1:
                         st.session_state.df = pd.concat([st.session_state.df, new_row], ignore_index=True)
                         log_action('Add', f"Added ID {data['ID']}")
                         st.session_state.refresh_table = True
+                        display_summary()
 
         # Delete Member
         elif action == 'Delete Member' and role == 'Admin':
@@ -172,6 +218,7 @@ with tab1:
                 st.session_state.df = st.session_state.df[st.session_state.df['ID'].astype(str)!=sel]
                 log_action('Delete', f"Deleted ID {sel}")
                 st.session_state.refresh_table = True
+                display_summary()
 
         # Export / Save
         elif action == 'Export / Save':
@@ -229,13 +276,17 @@ with tab2:
                 st.session_state.df.to_sql('members', conn, if_exists='replace', index=False)
                 conn.close()
                 st.success(f"All payment fields updated and saved for ID {selected_id}")
+                display_summary()
 
 # -----------------------
 # Tab 3: Audit Log
 # -----------------------
 with tab3:
     st.subheader("⚙️ Audit Log")
-    st.dataframe(pd.DataFrame(st.session_state.audit_log).tail(50))
+    if st.session_state.audit_log:
+        st.dataframe(pd.DataFrame(st.session_state.audit_log).sort_values('timestamp', ascending=False).head(50))
+    else:
+        st.info("No audit logs yet.")
 
 # -----------------------
 # Tab 4: Profile / Change Username & Password
@@ -265,58 +316,5 @@ with tab4:
 st.markdown('---')
 st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
-# -----------------------
-# 📊 Summary Statistics
-# -----------------------
-st.markdown("## 📊 Summary Statistics")
-
-def display_summary():
-    if not st.session_state.df.empty:
-        totals = st.session_state.df[['MONTHLY_PAYMENT','ADDITIONAL_PAYMENT','EXPENSES_INCURRED','LOAN','punishment']].sum()
-        Total_capital = totals['MONTHLY_PAYMENT'] + totals['ADDITIONAL_PAYMENT'] + totals['punishment']
-        Current_capital = Total_capital - totals['EXPENSES_INCURRED']
-        # Fixed value for end-of-month
-        Current_capital_on_account = 368_682.90
-        Interest_from_bank = Current_capital - Current_capital_on_account
-
-        summary_df = pd.DataFrame({
-            'Category': [
-                'Total Capital',
-                'Current Capital',
-                'Current Capital on Account',
-                'Interest from Bank'
-            ],
-            'Amount (ETB)': [
-                Total_capital,
-                Current_capital,
-                Current_capital_on_account,
-                Interest_from_bank
-            ]
-        })
-
-        st.dataframe(summary_df, use_container_width=True)
-
-        colors = ['blue', 'red', 'green', 'orange']
-        fig = px.bar(
-            summary_df,
-            x='Category',
-            y='Amount (ETB)',
-            text='Amount (ETB)',
-            title='💰 Summary Statistics',
-            color='Category',
-            color_discrete_sequence=colors
-        )
-        fig.update_traces(texttemplate='%{text:,.2f}', textposition='outside')
-        fig.update_layout(
-            xaxis_title="Category",
-            yaxis_title="Amount (ETB)",
-            uniformtext_minsize=8,
-            uniformtext_mode='hide',
-            showlegend=False
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.warning("No data available to display summary statistics.")
-
-# Call the summary function
+# Display Summary Statistics at bottom
 display_summary()
