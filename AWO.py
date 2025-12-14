@@ -161,7 +161,7 @@ def display_summary():
             'Current Capital': 'red',
             'Current Capital on Account': 'green',
             'loan':'violet',
-            'Interest from Bank': 'orange'
+            'Interest from Bank': 'orange',
             'punishment': 'gray'
         }
 
@@ -326,6 +326,7 @@ st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
 # Display Summary Statistics at bottom
 display_summary()
+
 
 
 
