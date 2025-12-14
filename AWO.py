@@ -1,6 +1,6 @@
 # -----------------------
 # Streamlit_Afoosha_walgargaarsa_Odaa.py
-# Fully Updated Version with Fixed Current_capital_on_account
+# Fully Updated Version with Reactive Summary Statistics
 # -----------------------
 
 import streamlit as st
@@ -266,57 +266,57 @@ st.markdown('---')
 st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
 # -----------------------
-# 📊 Summary Statistics Section
+# 📊 Summary Statistics
 # -----------------------
 st.markdown("## 📊 Summary Statistics")
 
-if not st.session_state.df.empty:
-    totals = st.session_state.df[['MONTHLY_PAYMENT', 'ADDITIONAL_PAYMENT', 'EXPENSES_INCURRED', 'LOAN', 'punishment']].sum()
-    
-    Total_capital = totals['MONTHLY_PAYMENT'] + totals['ADDITIONAL_PAYMENT'] + totals['punishment']
-    Current_capital = Total_capital - totals['EXPENSES_INCURRED']
+def display_summary():
+    if not st.session_state.df.empty:
+        totals = st.session_state.df[['MONTHLY_PAYMENT','ADDITIONAL_PAYMENT','EXPENSES_INCURRED','LOAN','punishment']].sum()
+        Total_capital = totals['MONTHLY_PAYMENT'] + totals['ADDITIONAL_PAYMENT'] + totals['punishment']
+        Current_capital = Total_capital - totals['EXPENSES_INCURRED']
+        # Fixed value for end-of-month
+        Current_capital_on_account = 368_682.90
+        Interest_from_bank = Current_capital - Current_capital_on_account
 
-    # Fixed current capital on account
-    Current_capital_on_account = 368_682.90
-    Interest_from_bank = Current_capital - Current_capital_on_account
+        summary_df = pd.DataFrame({
+            'Category': [
+                'Total Capital',
+                'Current Capital',
+                'Current Capital on Account',
+                'Interest from Bank'
+            ],
+            'Amount (ETB)': [
+                Total_capital,
+                Current_capital,
+                Current_capital_on_account,
+                Interest_from_bank
+            ]
+        })
 
-    summary_df = pd.DataFrame({
-        'Category': [
-            'Total Capital',
-            'Current Capital',
-            'Current Capital on Account',
-            'Interest from Bank'
-        ],
-        'Amount (ETB)': [
-            Total_capital,
-            Current_capital,
-            Current_capital_on_account,
-            Interest_from_bank
-        ]
-    })
+        st.dataframe(summary_df, use_container_width=True)
 
-    st.dataframe(summary_df, use_container_width=True)
+        colors = ['blue', 'red', 'green', 'orange']
+        fig = px.bar(
+            summary_df,
+            x='Category',
+            y='Amount (ETB)',
+            text='Amount (ETB)',
+            title='💰 Summary Statistics',
+            color='Category',
+            color_discrete_sequence=colors
+        )
+        fig.update_traces(texttemplate='%{text:,.2f}', textposition='outside')
+        fig.update_layout(
+            xaxis_title="Category",
+            yaxis_title="Amount (ETB)",
+            uniformtext_minsize=8,
+            uniformtext_mode='hide',
+            showlegend=False
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("No data available to display summary statistics.")
 
-    # Color-coded Plotly chart
-    colors = ['blue', 'red', 'green', 'orange']
-    fig = px.bar(
-        summary_df,
-        x='Category',
-        y='Amount (ETB)',
-        text='Amount (ETB)',
-        title='💰 Summary Statistics',
-        color='Category',
-        color_discrete_sequence=colors
-    )
-    fig.update_traces(texttemplate='%{text:,.2f}', textposition='outside')
-    fig.update_layout(
-        xaxis_title="Category",
-        yaxis_title="Amount (ETB)",
-        uniformtext_minsize=8,
-        uniformtext_mode='hide',
-        showlegend=False
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-else:
-    st.warning("No data available to display summary statistics.")
+# Call the summary function
+display_summary()
