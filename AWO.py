@@ -162,7 +162,7 @@ def display_summary():
             'Current Capital on Account': 'green',
             'loan':'violet',
             'Interest from Bank': 'orange'
-            'punishment':'gray'
+            'punishment': 'gray'
         }
 
         fig = px.bar(summary_df, x='Category', y='Amount (ETB)', text='Amount (ETB)',
@@ -326,5 +326,6 @@ st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
 # Display Summary Statistics at bottom
 display_summary()
+
 
 
