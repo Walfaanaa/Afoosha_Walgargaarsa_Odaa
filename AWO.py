@@ -1,6 +1,6 @@
 # -----------------------
 # Streamlit_Afoosha_walgargaarsa_Odaa.py
-# Fully Fixed, GitHub Auto-Load Version
+# Fully Updated Version with Fixed Current_capital_on_account
 # -----------------------
 
 import streamlit as st
@@ -8,10 +8,8 @@ import pandas as pd
 import sqlite3
 import io
 import re
-import requests
-from datetime import datetime
-from openpyxl import Workbook
 import bcrypt
+import plotly.express as px
 
 # -----------------------
 # Page Setup
@@ -35,7 +33,7 @@ if 'audit_log' not in st.session_state:
     st.session_state.audit_log = []
 
 if 'refresh_table' not in st.session_state:
-    st.session_state.refresh_table = False  # flag to refresh table after updates
+    st.session_state.refresh_table = False
 
 # -----------------------
 # Authentication
@@ -66,14 +64,13 @@ if not st.session_state.auth.get('logged_in', False):
 role = st.session_state.auth['role']
 
 # -----------------------
-# Data Loading from GitHub or fallback to DB
+# Data Loading
 # -----------------------
 PHONE_RE = re.compile(r"^[0-9]{7,15}$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 st.sidebar.header('Data Source')
-
-GITHUB_CSV_URL = "https://raw.githubusercontent.com/Walfaanaa/Afoosha_Walgargaarsa_Odaa/main/AWO%28july%29.csv"  # <-- Change this
+GITHUB_CSV_URL = "https://raw.githubusercontent.com/Walfaanaa/Afoosha_Walgargaarsa_Odaa/main/AWO%28july%29.csv"
 
 try:
     df_github = pd.read_csv(GITHUB_CSV_URL)
@@ -109,7 +106,7 @@ def log_action(action, details):
         'role': role,
         'action': action,
         'details': details,
-        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        'timestamp': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
     })
 
 # -----------------------
@@ -133,8 +130,6 @@ tab1, tab2, tab3, tab4 = st.tabs(["👥 Members", "💵 Payments", "⚙️ Audit
 # -----------------------
 with tab1:
     col1, col2 = st.columns([2,1])
-
-    # Actions Column
     with col2:
         st.subheader('Actions')
         actions = ['Export / Save']
@@ -160,13 +155,11 @@ with tab1:
                                 data[col] = float(data[col])
                             except (ValueError, TypeError):
                                 data[col] = 0.0
-
                         new_row = pd.DataFrame([data])
                         for col in st.session_state.df.columns:
                             if col not in new_row.columns:
                                 new_row[col] = pd.NA
                         new_row = new_row[st.session_state.df.columns]
-
                         st.session_state.df = pd.concat([st.session_state.df, new_row], ignore_index=True)
                         log_action('Add', f"Added ID {data['ID']}")
                         st.session_state.refresh_table = True
@@ -195,7 +188,6 @@ with tab1:
                 log_action('Save', f"Saved to {db_file}")
                 st.success('Data saved to database')
 
-    # Members Table Column
     with col1:
         st.subheader('Member Records')
         if st.session_state.refresh_table:
@@ -209,7 +201,6 @@ with tab1:
 with tab2:
     st.subheader("💵 Manage Payments & Financials")
     editable_fields = ['MONTHLY_PAYMENT','ADDITIONAL_PAYMENT','EXPENSES_INCURRED','LOAN','punishment']
-
     member_ids = st.session_state.df['ID'].astype(str).tolist()
     if member_ids:
         selected_id = st.selectbox("Select Member ID", member_ids)
@@ -275,74 +266,57 @@ st.markdown('---')
 st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
 # -----------------------
-# 📊 Summary Statistics Section (Bar Chart with "Total Capital Without Interest")
+# 📊 Summary Statistics Section
 # -----------------------
-import streamlit as st
-import pandas as pd
-import plotly.express as px  # ✅ make sure this import runs at top
-
 st.markdown("## 📊 Summary Statistics")
 
 if not st.session_state.df.empty:
-    # Define numeric columns
-    numeric_cols = ['MONTHLY_PAYMENT', 'ADDITIONAL_PAYMENT', 'EXPENSES_INCURRED', 'LOAN', 'punishment']
+    totals = st.session_state.df[['MONTHLY_PAYMENT', 'ADDITIONAL_PAYMENT', 'EXPENSES_INCURRED', 'LOAN', 'punishment']].sum()
+    
+    Total_capital = totals['MONTHLY_PAYMENT'] + totals['ADDITIONAL_PAYMENT'] + totals['punishment']
+    Current_capital = Total_capital - totals['EXPENSES_INCURRED']
 
-    # Calculate total values for each numeric column
-    totals = st.session_state.df[numeric_cols].sum()
+    # Fixed current capital on account
+    Current_capital_on_account = 368_682.90
+    Interest_from_bank = Current_capital - Current_capital_on_account
 
-    # Calculate Total Capital Without Interest
-    total_capital_without_interest = (
-        totals['MONTHLY_PAYMENT']
-        + totals['ADDITIONAL_PAYMENT']
-        + totals['LOAN']
-        + totals['punishment']
-        - totals['EXPENSES_INCURRED']
-    )
+    summary_df = pd.DataFrame({
+        'Category': [
+            'Total Capital',
+            'Current Capital',
+            'Current Capital on Account',
+            'Interest from Bank'
+        ],
+        'Amount (ETB)': [
+            Total_capital,
+            Current_capital,
+            Current_capital_on_account,
+            Interest_from_bank
+        ]
+    })
 
-    # Convert totals to DataFrame
-    totals_df = totals.to_frame().reset_index()
-    totals_df.columns = ['Category', 'Total (ETB)']
+    st.dataframe(summary_df, use_container_width=True)
 
-    # Add new calculated row
-    totals_df.loc[len(totals_df.index)] = ['Total Capital Without Interest', total_capital_without_interest]
-
-    # Display as table
-    st.dataframe(totals_df, use_container_width=True)
-
-    # ✅ Build Plotly bar chart
+    # Color-coded Plotly chart
+    colors = ['blue', 'red', 'green', 'orange']
     fig = px.bar(
-        totals_df,
+        summary_df,
         x='Category',
-        y='Total (ETB)',
-        text='Total (ETB)',
-        title='💰 Total Summary by Category (Including Capital Without Interest)',
+        y='Amount (ETB)',
+        text='Amount (ETB)',
+        title='💰 Summary Statistics',
         color='Category',
-        color_discrete_sequence=px.colors.qualitative.Set2
+        color_discrete_sequence=colors
     )
-
-    # Customize label display
     fig.update_traces(texttemplate='%{text:,.2f}', textposition='outside')
     fig.update_layout(
         xaxis_title="Category",
-        yaxis_title="Total (ETB)",
+        yaxis_title="Amount (ETB)",
         uniformtext_minsize=8,
         uniformtext_mode='hide',
         showlegend=False
     )
-
-    # Show chart
     st.plotly_chart(fig, use_container_width=True)
 
 else:
     st.warning("No data available to display summary statistics.")
-
-
-
-
-
-
-
-
-
-
-
