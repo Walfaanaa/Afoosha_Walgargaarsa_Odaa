@@ -130,7 +130,8 @@ def display_summary():
         Current_capital = Total_capital +totals['LOAN']- totals['EXPENSES_INCURRED']
         Current_capital_on_account = 368_682.90
         loan=totals['LOAN']
-        Interest_from_bank = Current_capital_on_account-Current_capital 
+        Interest_from_bank = Current_capital_on_account-Current_capital
+        punishment=totals['punishment']
 
         summary_df = pd.DataFrame({
             'Category': [
@@ -138,14 +139,16 @@ def display_summary():
                 'Current Capital',
                 'Current Capital on Account',
                 'loan',
-                'Interest from Bank'
+                'Interest from Bank',
+                'punishment'
             ],
             'Amount (ETB)': [
                 Total_capital,
                 Current_capital,
                 Current_capital_on_account,
                 loan,
-                Interest_from_bank
+                Interest_from_bank,
+                punishment
             ]
         })
 
@@ -159,6 +162,7 @@ def display_summary():
             'Current Capital on Account': 'green',
             'loan':'violet',
             'Interest from Bank': 'orange'
+            'punishment':'gray'
         }
 
         fig = px.bar(summary_df, x='Category', y='Amount (ETB)', text='Amount (ETB)',
@@ -322,4 +326,5 @@ st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
 # Display Summary Statistics at bottom
 display_summary()
+
 
