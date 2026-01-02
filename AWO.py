@@ -127,7 +127,7 @@ def display_summary():
     if not st.session_state.df.empty:
         totals = st.session_state.df[['MONTHLY_PAYMENT','ADDITIONAL_PAYMENT','EXPENSES_INCURRED','LOAN','punishment']].sum()
         Total_capital = totals['MONTHLY_PAYMENT'] + totals['ADDITIONAL_PAYMENT'] + totals['punishment']
-        Current_capital = Total_capital +totals['LOAN']- totals['EXPENSES_INCURRED']
+        Current_capital = Total_capital- totals['EXPENSES_INCURRED']
         Current_capital_on_account = 361609.99
         total_incurred= totals['EXPENSES_INCURRED']
         loan=totals['LOAN']
@@ -330,6 +330,7 @@ st.caption('Run using: `streamlit run Streamlit_Afoosha_walgargaarsa_Odaa.py`')
 
 # Display Summary Statistics at bottom
 display_summary()
+
 
 
 
