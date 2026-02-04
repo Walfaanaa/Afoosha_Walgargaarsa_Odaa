@@ -3,6 +3,7 @@ import pandas as pd
 import sqlite3
 import plotly.express as px
 from datetime import datetime
+import bcrypt
 
 # =========================================================
 # PAGE CONFIG
@@ -35,6 +36,24 @@ ALL_COLS = [
 ]
 
 GITHUB_CSV_URL = "https://raw.githubusercontent.com/Walfaanaa/Afoosha_Walgargaarsa_Odaa/main/AWO%28july%29.csv"
+
+# =========================================================
+# USERS (SECURE HASHED PASSWORDS)
+# =========================================================
+# ⚠️ These are example hashes. Replace them using the generator code below.
+# To generate hash:
+#   import bcrypt
+#   bcrypt.hashpw("admin123".encode(), bcrypt.gensalt())
+USERS = {
+    "admin": {
+        "password_hash": bcrypt.hashpw("admin123".encode("utf-8"), bcrypt.gensalt()),
+        "role": "Admin",
+    },
+    "staff": {
+        "password_hash": bcrypt.hashpw("staff123".encode("utf-8"), bcrypt.gensalt()),
+        "role": "Staff",
+    },
+}
 
 # =========================================================
 # SESSION STATE INIT
@@ -77,7 +96,8 @@ def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 def save_to_sqlite(df: pd.DataFrame, db_file: str):
     """Save dataframe to SQLite DB."""
     conn = sqlite3.connect(db_file)
-    conn.execute("""
+    conn.execute(
+        """
         CREATE TABLE IF NOT EXISTS members (
             ID TEXT PRIMARY KEY,
             FIRST_NAME TEXT,
@@ -91,7 +111,8 @@ def save_to_sqlite(df: pd.DataFrame, db_file: str):
             Email TEXT,
             punishment REAL
         )
-    """)
+        """
+    )
     conn.commit()
 
     df = normalize_dataframe(df)
@@ -104,7 +125,8 @@ def save_to_sqlite(df: pd.DataFrame, db_file: str):
 def load_from_sqlite(db_file: str) -> pd.DataFrame:
     """Load dataframe from SQLite DB."""
     conn = sqlite3.connect(db_file)
-    conn.execute("""
+    conn.execute(
+        """
         CREATE TABLE IF NOT EXISTS members (
             ID TEXT PRIMARY KEY,
             FIRST_NAME TEXT,
@@ -118,7 +140,8 @@ def load_from_sqlite(db_file: str) -> pd.DataFrame:
             Email TEXT,
             punishment REAL
         )
-    """)
+        """
+    )
     conn.commit()
 
     df = pd.read_sql_query("SELECT * FROM members", conn)
@@ -126,21 +149,20 @@ def load_from_sqlite(db_file: str) -> pd.DataFrame:
     return normalize_dataframe(df)
 
 
+def check_password(password: str, password_hash: bytes) -> bool:
+    """Check password using bcrypt hash."""
+    return bcrypt.checkpw(password.encode("utf-8"), password_hash)
+
+
 def login_ui():
-    """Sidebar login UI."""
+    """Sidebar login UI (hashed passwords)."""
     st.sidebar.subheader("🔐 Login")
 
     username = st.sidebar.text_input("Username")
     password = st.sidebar.text_input("Password", type="password")
 
-    # Example users (You can change these)
-    USERS = {
-        "admin": {"password": "admin123", "role": "Admin"},
-        "staff": {"password": "staff123", "role": "Staff"},
-    }
-
     if st.sidebar.button("Login"):
-        if username in USERS and password == USERS[username]["password"]:
+        if username in USERS and check_password(password, USERS[username]["password_hash"]):
             st.session_state.auth = {
                 "logged_in": True,
                 "username": username,
@@ -195,7 +217,7 @@ if st.session_state.df.empty:
     try:
         df_github = pd.read_csv(GITHUB_CSV_URL)
         st.session_state.df = normalize_dataframe(df_github)
-    except:
+    except Exception:
         st.session_state.df = normalize_dataframe(st.session_state.df)
 
 # =========================================================
@@ -219,26 +241,28 @@ def display_summary():
     interest_from_bank = current_capital_on_account - current_capital
     punishment = totals["punishment"]
 
-    summary_df = pd.DataFrame({
-        "Category": [
-            "Total Capital",
-            "Current Capital",
-            "Current Capital on Account",
-            "Total Incurred",
-            "Loan",
-            "Interest from Bank",
-            "Punishment",
-        ],
-        "Amount (ETB)": [
-            float(total_capital),
-            float(current_capital),
-            float(current_capital_on_account),
-            float(total_incurred),
-            float(loan),
-            float(interest_from_bank),
-            float(punishment),
-        ],
-    })
+    summary_df = pd.DataFrame(
+        {
+            "Category": [
+                "Total Capital",
+                "Current Capital",
+                "Current Capital on Account",
+                "Total Incurred",
+                "Loan",
+                "Interest from Bank",
+                "Punishment",
+            ],
+            "Amount (ETB)": [
+                float(total_capital),
+                float(current_capital),
+                float(current_capital_on_account),
+                float(total_incurred),
+                float(loan),
+                float(interest_from_bank),
+                float(punishment),
+            ],
+        }
+    )
 
     st.subheader("📌 Summary Statistics")
 
@@ -323,7 +347,7 @@ with tab2:
                 expenses = st.number_input("Expenses Incurred", min_value=0.0, value=0.0)
 
             with col3:
-                loan = st.number_input("Loan", min_value=0.0, value=0.0)
+                loan_amount = st.number_input("Loan", min_value=0.0, value=0.0)
                 punishment = st.number_input("Punishment", min_value=0.0, value=0.0)
                 opening_date = st.text_input("Opening Date", value=str(datetime.now().date()))
 
@@ -343,7 +367,7 @@ with tab2:
                         "MONTHLY_PAYMENT": monthly,
                         "ADDITIONAL_PAYMENT": additional,
                         "EXPENSES_INCURRED": expenses,
-                        "LOAN": loan,
+                        "LOAN": loan_amount,
                         "OPENINNG_DATE": opening_date.strip(),
                         "PHONE_NUM": phone.strip(),
                         "Email": email.strip(),
