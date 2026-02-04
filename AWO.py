@@ -3,7 +3,19 @@ import pandas as pd
 import sqlite3
 import plotly.express as px
 from datetime import datetime
-import bcrypt
+import os
+from dotenv import load_dotenv
+
+# =========================================================
+# LOAD ENV
+# =========================================================
+load_dotenv()
+
+ADMIN_USER = os.getenv("AWO_ADMIN_USER", "admin")
+ADMIN_PASSWORD = os.getenv("AWO_ADMIN_PASSWORD", "admin123")
+
+STAFF_USER = os.getenv("AWO_STAFF_USER", "staff")
+STAFF_PASSWORD = os.getenv("AWO_STAFF_PASSWORD", "staff123")
 
 # =========================================================
 # PAGE CONFIG
@@ -36,24 +48,6 @@ ALL_COLS = [
 ]
 
 GITHUB_CSV_URL = "https://raw.githubusercontent.com/Walfaanaa/Afoosha_Walgargaarsa_Odaa/main/AWO%28july%29.csv"
-
-# =========================================================
-# USERS (SECURE HASHED PASSWORDS)
-# =========================================================
-# ⚠️ These are example hashes. Replace them using the generator code below.
-# To generate hash:
-#   import bcrypt
-#   bcrypt.hashpw("admin123".encode(), bcrypt.gensalt())
-USERS = {
-    "admin": {
-        "password_hash": bcrypt.hashpw("admin123".encode("utf-8"), bcrypt.gensalt()),
-        "role": "Admin",
-    },
-    "staff": {
-        "password_hash": bcrypt.hashpw("staff123".encode("utf-8"), bcrypt.gensalt()),
-        "role": "Staff",
-    },
-}
 
 # =========================================================
 # SESSION STATE INIT
@@ -149,27 +143,34 @@ def load_from_sqlite(db_file: str) -> pd.DataFrame:
     return normalize_dataframe(df)
 
 
-def check_password(password: str, password_hash: bytes) -> bool:
-    """Check password using bcrypt hash."""
-    return bcrypt.checkpw(password.encode("utf-8"), password_hash)
-
-
 def login_ui():
-    """Sidebar login UI (hashed passwords)."""
+    """Sidebar login UI using .env passwords."""
     st.sidebar.subheader("🔐 Login")
 
     username = st.sidebar.text_input("Username")
     password = st.sidebar.text_input("Password", type="password")
 
     if st.sidebar.button("Login"):
-        if username in USERS and check_password(password, USERS[username]["password_hash"]):
+        # Admin
+        if username == ADMIN_USER and password == ADMIN_PASSWORD:
             st.session_state.auth = {
                 "logged_in": True,
                 "username": username,
-                "role": USERS[username]["role"],
+                "role": "Admin",
             }
-            st.sidebar.success(f"Welcome {username} ({USERS[username]['role']}) ✅")
+            st.sidebar.success(f"Welcome {username} (Admin) ✅")
             st.rerun()
+
+        # Staff
+        elif username == STAFF_USER and password == STAFF_PASSWORD:
+            st.session_state.auth = {
+                "logged_in": True,
+                "username": username,
+                "role": "Staff",
+            }
+            st.sidebar.success(f"Welcome {username} (Staff) ✅")
+            st.rerun()
+
         else:
             st.sidebar.error("Invalid username or password ❌")
 
@@ -221,7 +222,7 @@ if st.session_state.df.empty:
         st.session_state.df = normalize_dataframe(st.session_state.df)
 
 # =========================================================
-# SUMMARY FUNCTION (COLORED GRAPH WORKING)
+# SUMMARY FUNCTION
 # =========================================================
 def display_summary():
     df = normalize_dataframe(st.session_state.df)
@@ -266,12 +267,10 @@ def display_summary():
 
     st.subheader("📌 Summary Statistics")
 
-    # formatted table (for display only)
     summary_table = summary_df.copy()
     summary_table["Amount (ETB)"] = summary_table["Amount (ETB)"].map(lambda x: f"{x:,.2f}")
     st.dataframe(summary_table, use_container_width=True)
 
-    # different colors
     color_map = {
         "Total Capital": "#0d6efd",
         "Current Capital": "#dc3545",
@@ -348,7 +347,7 @@ with tab2:
 
             with col3:
                 loan_amount = st.number_input("Loan", min_value=0.0, value=0.0)
-                punishment = st.number_input("Punishment", min_value=0.0, value=0.0)
+                punishment_val = st.number_input("Punishment", min_value=0.0, value=0.0)
                 opening_date = st.text_input("Opening Date", value=str(datetime.now().date()))
 
             phone = st.text_input("Phone Number")
@@ -371,7 +370,7 @@ with tab2:
                         "OPENINNG_DATE": opening_date.strip(),
                         "PHONE_NUM": phone.strip(),
                         "Email": email.strip(),
-                        "punishment": punishment,
+                        "punishment": punishment_val,
                     }
 
                     st.session_state.df = normalize_dataframe(
