@@ -11,11 +11,17 @@ from dotenv import load_dotenv
 # =========================================================
 load_dotenv()
 
-ADMIN_USER = os.getenv("AWO_ADMIN_USER", "admin")
-ADMIN_PASSWORD = os.getenv("AWO_ADMIN_PASSWORD", "admin123")
+# Get credentials from .env ONLY
+ADMIN_USER = os.getenv("AWO_ADMIN_USER")
+ADMIN_PASSWORD = os.getenv("AWO_ADMIN_PASSWORD")
+STAFF_USER = os.getenv("AWO_STAFF_USER")
+STAFF_PASSWORD = os.getenv("AWO_STAFF_PASSWORD")
 
-STAFF_USER = os.getenv("AWO_STAFF_USER", "staff")
-STAFF_PASSWORD = os.getenv("AWO_STAFF_PASSWORD", "staff123")
+# Fail fast if any credential missing
+if not all([ADMIN_USER, ADMIN_PASSWORD, STAFF_USER, STAFF_PASSWORD]):
+    raise ValueError(
+        "Missing credentials in .env. Please set AWO_ADMIN_USER, AWO_ADMIN_PASSWORD, AWO_STAFF_USER, AWO_STAFF_PASSWORD"
+    )
 
 # =========================================================
 # PAGE CONFIG
@@ -221,6 +227,7 @@ if st.session_state.df.empty:
     except Exception:
         st.session_state.df = normalize_dataframe(st.session_state.df)
 
+
 # =========================================================
 # SUMMARY FUNCTION
 # =========================================================
@@ -326,7 +333,6 @@ with tab2:
     st.subheader("👥 Members Data")
 
     df = normalize_dataframe(st.session_state.df)
-
     st.dataframe(df, use_container_width=True)
 
     if role == "Admin":
