@@ -204,7 +204,7 @@ def display_summary():
     total_capital = totals["MONTHLY_PAYMENT"] + totals["ADDITIONAL_PAYMENT"] + totals["punishment"]
     current_capital = total_capital - totals["EXPENSES_INCURRED"]
 
-    current_capital_on_account = 370286.99
+    current_capital_on_account = 382056.89
     total_incurred = totals["EXPENSES_INCURRED"]
     loan = totals["LOAN"]
     interest_from_bank = current_capital_on_account - current_capital
@@ -369,3 +369,4 @@ with tab3:
             file_name="AWO_export.csv",
             mime="text/csv",
         )
+
