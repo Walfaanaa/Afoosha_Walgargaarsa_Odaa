@@ -204,7 +204,7 @@ def display_summary():
     total_capital = totals["MONTHLY_PAYMENT"] + totals["ADDITIONAL_PAYMENT"] + totals["punishment"]
     current_capital = total_capital - totals["EXPENSES_INCURRED"]
 
-    current_capital_on_account = 383693.37
+    current_capital_on_account = 387868.37
     total_incurred = totals["EXPENSES_INCURRED"]
     loan = totals["LOAN"]
     interest_from_bank = current_capital_on_account - current_capital
