@@ -202,12 +202,12 @@ def display_summary():
     totals = df[NUMERIC_COLS].sum()
 
     total_capital = totals["MONTHLY_PAYMENT"] + totals["ADDITIONAL_PAYMENT"] + totals["punishment"]
-    current_capital = 334890.55 + totals["LOAN"]
+    current_capital = 335390.55 + totals["LOAN"]
 
-    current_capital_on_account = 334890.55
+    current_capital_on_account =335390.55
     total_incurred = totals["EXPENSES_INCURRED"]
     loan = totals["LOAN"]
-    interest_from_bank = 334890.55-(total_capital-totals["EXPENSES_INCURRED"])
+    interest_from_bank = 335390.55-(total_capital-totals["EXPENSES_INCURRED"])
     punishment = totals["punishment"]
 
     summary_df = pd.DataFrame(
