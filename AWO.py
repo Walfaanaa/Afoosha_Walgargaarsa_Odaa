@@ -202,7 +202,7 @@ def display_summary():
     totals = df[NUMERIC_COLS].sum()
 
     total_capital = totals["MONTHLY_PAYMENT"] + totals["ADDITIONAL_PAYMENT"] + totals["punishment"]
-    current_capital = current_capital_on_account + loan
+    current_capital = 334890.55 + totals["LOAN"]
 
     current_capital_on_account = 334890.55
     total_incurred = totals["EXPENSES_INCURRED"]
