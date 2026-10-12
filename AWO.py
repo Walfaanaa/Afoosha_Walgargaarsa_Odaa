@@ -207,7 +207,7 @@ def display_summary():
     current_capital_on_account = 334890.55
     total_incurred = totals["EXPENSES_INCURRED"]
     loan = totals["LOAN"]
-    interest_from_bank = 334890.55-total_capital-totals["EXPENSES_INCURRED"]
+    interest_from_bank = 334890.55-(total_capital-totals["EXPENSES_INCURRED"])
     punishment = totals["punishment"]
 
     summary_df = pd.DataFrame(
